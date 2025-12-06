@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dessertino Chatbot</title>
+
+    <style>
+
+      :root {
+        --primary-bg: linear-gradient(120deg, #ff5ff6, #e9f7ff);
+        --header-shadow: 2px 2px 2px rgb(51, 51, 51);
+        --link-color: #000000;
+        --link-hover-color: #fff;
+        --professional-font: 'Poppins', 'Helvetica', sans-serif;
+        --base-font-size: 17px;
+      }
+
+      /* Base Styles */
+      html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            /* User specified background gradient */
+            background: linear-gradient(120deg, #2e3636, #5aafb2, #363f3f);
+            font-family: var(--professional-font);
+            font-size: var(--base-font-size);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+      /* Animation */
+      @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+      body.fade-in {
+            animation: fadeIn 1.3s ease-in-out forwards;
+        }
+
+      /* Header */
+      h1 {
+        color: #fdf4df;
+        text-align: center;
+        font-family: 'Cursive', cursive;
+        font-size: 80px;
+        text-shadow: var(--header-shadow);
+        margin: 20px 0 30px 0;
+        padding: 7px;
+        width: 100%;
+      }
+
+      /* Container for Inputs */
+      .input-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 80%;
+        max-width: 800px;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 40px;
+        border-color: black;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      /* NEW: Control container for input bar and buttons */
+      .controls-container {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        align-items: center;
+      }
+
+      /* Input Fields */
+      .input-field {
+        flex-grow: 1; /* Allow input to take up most of the space */
+        padding: 15px 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        font-size: 19px;
+        font-family: var(--professional-font);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .input-field:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px #518283, inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Chatbot specific style for result area */
+      #chat-history {
+          margin-top: 30px;
+          width: 80%;
+          max-width: 800px;
+          min-height: 250px;
+          padding: 20px;
+          background: linear-gradient(140deg, #b1f3ea, #4bcace, #b1f3ea);
+          border-radius: 15px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+          font-family: var(--professional-font);
+          color: #333; /* Set a default dark color for inherited elements */
+          overflow-y: auto;
+      }
+
+      #chat-history h2 {
+          /* User specified color */
+          color: black;
+          margin-top: 0;
+          border-bottom: 2px solid #eee;
+          padding-bottom: 10px;
+          font-size: 30px;
+          font-weight: bold;
+          font-family: cursive;
+      }
+
+      .message {
+          margin-bottom: 15px;
+          padding: 12px;
+          border-radius: 10px;
+          font-size: var(--base-font-size);
+          line-height: 1.5;
+          color: black; /* Explicitly ensure message text is black */
+      }
+
+      .user-message {
+          text-align: right;
+          background-color: #e6f7ff;
+          /* User specified border color */
+          border: 1px solid #b0e6d1;
+          margin-left: 20%;
+      }
+
+      .user-message strong {
+          /* User specified text color */
+          color: black;
+      }
+
+      .assistant-message {
+          text-align: left;
+          background-color: #ebfcfa;
+          /* User specified border color */
+          border: 1px solid #68d1f1;
+          margin-right: 20%;
+      }
+
+      .assistant-message strong {
+          /* User specified text color */
+          color: black;
+      }
+
+      /* Cursor blinking effect for dynamic typing */
+      .typing-cursor {
+        font-weight: bold;
+        animation: blink 1s step-start infinite;
+      }
+
+      @keyframes blink {
+        550% { opacity: 0; }
+      }
+
+      /* Base Button Styling (Applied to all buttons) */
+      .btn-base {
+          padding: 15px 15px; /* Adjust padding for icon buttons */
+          border: none;
+          border-radius: 10px;
+          font-size: 20px;
+          cursor: pointer;
+          /* User specified gradient (Used for general buttons like generate/stop) */
+          background: linear-gradient(120deg, #759798, #cef0f1, #759798);
+          color: var(--link-color);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+          transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+          font-weight: bold;
+          font-family: cursive;
+          width: 50px; /* Fixed width for a clean look */
+          height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .btn-base:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+          /* Original hover gradient for generic buttons */
+          background: linear-gradient(140deg, #4bb492, #89c0ae, #4bb492);
+          color: white;
+      }
+
+      /* Generate Button Specific Styling (The Arrow) */
+      #generate-button {
+          font-size: 30px;
+          /* ------------------------------------- */
+          /* MODIFICATION: Set initial background to the greenish color */
+          background: linear-gradient(140deg, #4bb492, #89c0ae, #4bb492);
+          color: white; /* Changed color to white for contrast */
+          /* ------------------------------------- */
+      }
+
+      #generate-button:hover {
+          /* MODIFICATION: Slight color change on hover, similar to the Stop button logic */
+          background: linear-gradient(140deg, #89c0ae, #4bb492, #89c0ae);
+          transform: translateY(-3px) scale(1.05);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Stop Button Specific Styling (The Square) */
+      #stop-button {
+          background: linear-gradient(120deg, #ff6b6b, #cc0000, #ff6b6b); /* Red gradient for stop */
+          color: white;
+          border-radius: 10px;
+          width: 50px;
+          height: 50px;
+          font-size: 30px;
+          display: none; /* Initially hidden */
+      }
+
+      #stop-button:hover {
+          background: linear-gradient(140deg, #cc0000, #ff6b6b);
+          transform: translateY(-3px) scale(1.05);
+      }
+
+      /* Hide the original task links as they are replaced */
+      .task-link {
+          display: none;
+      }
+
+    </style>
+</head>
+
+
+<body class="fade-in">
+  <h1 id="mainHeader">🍨 Dessertino's Chatbot</h1>
+
+  <div class="input-container">
+    <div class="controls-container">
+        <input type="text" id="prompt-bar" class="input-field" placeholder="Ask about the menu, stores, or franchise...">
+
+        <button id="generate-button" class="btn-base" onclick="handleChatStart()">
+            <span class="button-icon">➤</span>
+        </button>
+
+        <button id="stop-button" class="btn-base" onclick="abortGeneration()">
+            <span class="button-icon">■</span>
+        </button>
+    </div>
+  </div>
+
+  <div id="chat-history">
+      <h2>Chat History</h2>
+      </div>
+
+  <script>
+    const TYPING_SPEED = 20; // Milliseconds per character
+    const RAG_ENDPOINT = 'http://127.0.0.1:5000/query-rag';
+    const WELCOME_MESSAGE = "Welcome to Dessertino! How can I help you today?";
+
+
+    // Global array to store conversation history (role and content)
+    const conversationHistory = [];
+
+    // NEW: Global AbortController instance
+    let abortController = null;
+    let isGenerating = false;
+
+    // References to control elements
+    const historyDiv = document.getElementById('chat-history');
+    const promptBar = document.getElementById('prompt-bar');
+    const generateButton = document.getElementById('generate-button');
+    const stopButton = document.getElementById('stop-button');
+
+
+    // --- Typing and UI Functions ---
+
+    /**
+     * Types text into an element with a typing effect and re-enables controls on finish.
+     * @param {HTMLElement} element The element to type into.
+     * @param {string} text The text to type.
+     */
+    function typeWriter(element, text) {
+        let i = 0;
+        element.innerHTML = '<strong>Assistant:</strong> ';
+
+        const textNode = document.createElement('span');
+        const cursor = document.createElement('span');
+        cursor.classList.add('typing-cursor');
+        cursor.textContent = '|';
+
+        element.appendChild(textNode);
+        element.appendChild(cursor);
+
+        // Function to type each character
+        function type() {
+            // Check if generation was aborted or if the element is no longer in the DOM
+            if (i < text.length && document.contains(element) && isGenerating) {
+                textNode.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, TYPING_SPEED);
+            } else {
+                // Typing finished or aborted
+                isGenerating = false;
+                if (element.contains(cursor)) {
+                    element.removeChild(cursor);
+                }
+
+                // Ensure the final content reflects the full text if not aborted,
+                // or just the typed portion if aborted mid-way
+                if (i < text.length) {
+                    textNode.textContent += '... [Response Stopped]';
+                }
+
+                updateUIControls(false);
+            }
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+        type();
+    }
+
+    /**
+     * Updates the UI (buttons and input bar) based on the generation status.
+     * @param {boolean} generating True if response is currently being generated.
+     */
+    function updateUIControls(generating) {
+        isGenerating = generating;
+        promptBar.disabled = generating;
+        generateButton.style.display = generating ? 'none' : 'flex';
+        stopButton.style.display = generating ? 'flex' : 'none';
+
+        // Re-enable generate button if not generating AND prompt bar is not empty
+        if (!generating) {
+            generateButton.disabled = !promptBar.value.trim();
+        }
+    }
+
+    // Event listener for prompt bar input to control generate button state
+    promptBar.addEventListener('input', () => {
+        if (!isGenerating) {
+            generateButton.disabled = !promptBar.value.trim();
+        }
+    });
+
+    // --- Core Chat Logic ---
+
+    /**
+     * Handles the start of the chat process, including input validation.
+     */
+    function handleChatStart() {
+        const prompt = promptBar.value.trim();
+        if (prompt) {
+            simulateChat(prompt);
+        } else {
+            console.error("Please enter a question.");
+        }
+    }
+
+    /**
+     * Aborts the currently running fetch request and stops typing.
+     */
+    function abortGeneration() {
+        if (abortController) {
+            abortController.abort();
+            isGenerating = false;
+            // The typeWriter function will catch the aborted state and clean up the UI
+        }
+        // updateUIControls(false) will be called inside typeWriter
+    }
+
+    /**
+     * Executes the abortable fetch request to the backend.
+     * @param {string} prompt The user's query.
+     */
+    async function simulateChat(prompt) {
+
+        // Reset and start new AbortController
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        // Update UI to "Generating" state
+        updateUIControls(true);
+
+        // 1. Add user message to history array BEFORE display
+        conversationHistory.push({ role: 'user', content: prompt });
+
+        // 2. Display User Message
+        historyDiv.innerHTML += `<p class="message user-message"><strong>You:</strong> ${prompt}</p>`;
+
+        // Clear the input bar
+        promptBar.value = '';
+        generateButton.disabled = true; // Keep button disabled after clearing input
+
+        // Create a new paragraph element for the Assistant's response
+        const assistantMessage = document.createElement('p');
+        assistantMessage.classList.add('message', 'assistant-message');
+        historyDiv.appendChild(assistantMessage);
+
+        historyDiv.scrollTop = historyDiv.scrollHeight;
+
+        // Set temporary loading message
+        assistantMessage.innerHTML = '<strong>Assistant:</strong> Thinking... <span class="typing-cursor"></span>';
+
+
+        try {
+            const response = await fetch(RAG_ENDPOINT, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                // Pass the signal to make the fetch request abortable
+                signal: signal,
+                // CRITICAL: Send the complete history array
+                body: JSON.stringify({
+                    prompt: prompt,
+                    history: conversationHistory
+                })
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`Server returned status ${response.status}. Check if 'app.py' is running. Error body: ${errorBody}`);
+            }
+
+            const data = await response.json();
+            const llmResponse = data.answer || "Error: Received empty or invalid answer structure from the server.";
+
+            // Add the assistant's response to the history array only if successful
+            conversationHistory.push({ role: 'assistant', content: llmResponse });
+
+            // Start typing the response
+            typeWriter(assistantMessage, llmResponse);
+
+        } catch (error) {
+            // Check if the error was due to abortion
+            if (error.name === 'AbortError') {
+                console.log('Fetch request aborted by user.');
+                // typeWriter handles the cleanup and adds the "Stopped" message
+            } else {
+                console.error('Fetch error:', error);
+
+                // Stop typing and remove cursor
+                isGenerating = false;
+
+                // Display error to the user
+                assistantMessage.innerHTML = `<strong>Assistant:</strong> Error connecting to the RAG server. Details: ${error.message}`;
+                updateUIControls(false); // Re-enable controls on error
+            }
+        }
+    }
+
+    // --- Initialization ---
+
+    function initializeChat() {
+        // Initial state
+        generateButton.disabled = true;
+
+        const assistantMessage = document.createElement('p');
+        assistantMessage.classList.add('message', 'assistant-message');
+        historyDiv.appendChild(assistantMessage);
+
+        // Add initial message to history array
+        conversationHistory.push({ role: 'assistant', content: WELCOME_MESSAGE });
+
+        // Type the welcome message, setting isGenerating to true temporarily
+        isGenerating = true;
+        typeWriter(assistantMessage, WELCOME_MESSAGE);
+    }
+
+    // CRITICAL: Call the initialization function when the window loads
+    window.onload = initializeChat;
+
+    // Optional: Add event listener for Enter key on the prompt bar
+    promptBar.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !generateButton.disabled && !isGenerating) {
+            event.preventDefault(); // Prevent default form submission
+            handleChatStart();
+        }
+    });
+  </script>
+</body>
+</html>

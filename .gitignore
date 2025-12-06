@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Flask/Gunicorn
+*.log
+
+# Vector Store/RAG Data (CRITICAL: Do not commit large DBs)
+*.bin
+*.pkl
+*.faiss
+*.sqlite
