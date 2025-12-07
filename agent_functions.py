@@ -11,16 +11,22 @@ from langchain_core.prompts import ChatPromptTemplate
 from operator import itemgetter
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import os
+
+
+OLLAMA_SERVER_URL = os.environ.get("OLLAMA_HOST_URL", "http://localhost:11434")
 
 # --- Initialization ---
 llm = Ollama(
     model="llama3:8b",
-    temperature=0.1
+    temperature=0.1,
+    base_url=OLLAMA_SERVER_URL,
 )
 
 # 2. Use a dedicated, fast embedding model
 embd_model = OllamaEmbeddings(
-    model="nomic-embed-text"
+    model="nomic-embed-text",
+    base_url=OLLAMA_SERVER_URL,
 )
 
 DESSERTINO_WEB_PATHS = [
