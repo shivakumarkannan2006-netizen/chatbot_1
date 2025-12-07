@@ -1,10 +1,12 @@
 # Shriramajayam
-from typing import TypedDict, List, Literal, Dict
+from typing import TypedDict, List, Dict
 from langchain_community.llms import Ollama
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from langchain_core.documents.base import Document
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
+# NEW: Import for local, small embedding model
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_classic.retrievers import MultiQueryRetriever
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -14,19 +16,31 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
 
 
+# --- Configuration Changes ---
+
+# IMPORTANT: The model is changed to a smaller, quantized version (~4GB instead of 8GB)
+# A truly 1GB model is hard to find and may not perform well. Phi-3 is a good, small option.
+SMALL_LLM_MODEL = "phi3:3.8b-mini-4k-instruct-q4_0"
+# The embedding model is removed from the Ollama server to save RAM
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+
+
+# OLLAMA_SERVER_URL is now only for the LLM
 OLLAMA_SERVER_URL = os.environ.get("OLLAMA_HOST_URL", "http://localhost:11434")
 
 # --- Initialization ---
+
+# 1. Initialize the LLM with the smaller model and base_url
 llm = Ollama(
-    model="llama3:8b",
+    model=SMALL_LLM_MODEL,
     temperature=0.1,
     base_url=OLLAMA_SERVER_URL,
 )
 
-# 2. Use a dedicated, fast embedding model
-embd_model = OllamaEmbeddings(
-    model="nomic-embed-text",
-    base_url=OLLAMA_SERVER_URL,
+# 2. Use a dedicated, small, client-side embedding model (NO API KEY NEEDED)
+# This runs locally on the FREE TIER service, saving RAM on the paid Ollama service.
+embd_model = SentenceTransformerEmbeddings(
+    model_name=EMBEDDING_MODEL_NAME,
 )
 
 DESSERTINO_WEB_PATHS = [
@@ -50,10 +64,10 @@ vectorstore_external_docs = Chroma.from_documents(
 # --- State Definition ---
 class AgentState(TypedDict):
     messages: List[BaseMessage]
-    # NEW: Keys to store retrieved context
+    # Keys to store retrieved context
     external_context: List[str]
     conversation_context: List[str]
-    router_decision: str  # Added for persistence in conditional routing
+    router_decision: str
 
 
 # --- Helper Function ---
@@ -89,7 +103,7 @@ def retrieve_info_from_conversation(state: AgentState) -> AgentState:
     conversation_history_doc = messages_to_document(state["messages"])
     vectorstore = Chroma.from_documents(
         documents=[conversation_history_doc],
-        embedding=embd_model
+        embedding=embd_model # Uses the local SentenceTransformer model
     )
 
     retriever = MultiQueryRetriever.from_llm(
@@ -200,6 +214,6 @@ def router_node(state: AgentState) -> Dict:
         path = "respond_with_gk"
         decision = "RESPOND_WITH_GK"
 
-    # FIX: Return the starting path under 'next_node' AND the flow decision under 'router_decision'
+    # Return the starting path under 'next_node' AND the flow decision under 'router_decision'
     # The 'router_decision' key persists in the state for later branching.
     return {"next_node": path, "router_decision": decision}
